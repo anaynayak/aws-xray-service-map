@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AWS X-ray options</title>
+    <link rel="stylesheet" href="styles/pure-min.css">
+</head>
+
+<body>
+    <div style="margin: 10px">
+        <form class="pure-form pure-form-aligned">
+            <fieldset>
+                <legend>AWS X-ray options</legend>
+                <div class="pure-control-group">
+                    <label for="highlightNodes">Highlight nodes matching</label>
+                    <input type="text" id="highlightNodes">
+                </div>
+                <div class="pure-control-group">
+                    <label for="hideNodes">Hide nodes matching</label>
+                    <input type="text" id="hideNodes">
+                </div>
+
+                <div id="status"></div>
+                <input type="submit" value="Save" id="save" class="pure-button pure-button-primary" />
+            </fieldset>
+        </form>
+    </div>
+    <script src="scripts/options.js"></script>
+</body>
+
+</html>

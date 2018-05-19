@@ -1,12 +1,12 @@
-function colorize() {
+function colorize(data) {
     var highlightEnvs = 'Prod,prd'.split(",");
     var hideEnvs = 'dev,Dev,e2e,E2E'.split(",");
     highlightEnvs.forEach(function (env) {
-        $("g title:contains(" + env + ".)").parent().children('circle').css('fill', 'lightskyblue');
+        $("g.node title:contains(" + env + ".)").parent().children('circle').css('fill', 'lightskyblue');
     });
 
     hideEnvs.forEach(function (env) {
-        $("g title:contains(" + env + ".)").parent().css('opacity', 0.5);
+        $("g.node title:contains(" + env + ".)").parent().css('opacity', 0.5);
     });
 
     function perc2color(perc) {
@@ -41,5 +41,7 @@ function colorize() {
     });
 }
 chrome.runtime.onMessage.addListener(function callback(message, sender) {
-    colorize();
+    chrome.storage.sync.get(["highlightNodes", "hideNodes"], function(data) {
+        colorize(data);
+    });
 });
