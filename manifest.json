@@ -19,6 +19,15 @@
             "scripts/background.js"
         ]
     },
+    "commands": {
+        "colorize-aws-xray": {
+            "suggested_key": {
+              "default": "Ctrl+Shift+X",
+              "mac": "Command+Shift+X"
+            },
+            "description": "Colorize AWS X-ray"
+          }
+    },
     "content_scripts": [
         {
             "matches": [
