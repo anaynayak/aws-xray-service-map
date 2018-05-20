@@ -1,12 +1,16 @@
-function colorize(data) {
-    var highlightEnvs = 'Prod,prd'.split(",");
-    var hideEnvs = 'dev,Dev,e2e,E2E'.split(",");
-    highlightEnvs.forEach(function (env) {
-        $("g.node title:contains(" + env + ".)").parent().children('circle').css('fill', 'lightskyblue');
-    });
+function colorize(highlightNodes, hideNodes) {
+    var nodes = $("g.node title").toArray();
+    var highlight = new RegExp(highlightNodes);
+    var hide = new RegExp(hideNodes);
 
-    hideEnvs.forEach(function (env) {
-        $("g.node title:contains(" + env + ".)").parent().css('opacity', 0.5);
+    nodes.forEach(function (n) {
+        var node = $(n);
+        if (highlight.test(node.text())) {
+            node.parent().children('circle').css('fill', 'lightskyblue');
+        }
+        if (hide.test(node.text())) {
+            node.parent().css('opacity', 0.5);
+        }
     });
 
     function perc2color(perc) {
@@ -41,7 +45,10 @@ function colorize(data) {
     });
 }
 chrome.runtime.onMessage.addListener(function callback(message, sender) {
-    chrome.storage.sync.get(["highlightNodes", "hideNodes"], function(data) {
-        colorize(data);
+    chrome.storage.sync.get({
+        "highlightNodes": '(prd|Prod)',
+        "hideNodes": "(dev|Dev|e2e|E2E)"
+    }, function (data) {
+        colorize(data.highlightNodes, data.hideNodes);
     });
 });
