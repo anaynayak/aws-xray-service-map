@@ -34,8 +34,8 @@ function isValid(text) {
 
 function restoreOptions() {
     chrome.storage.sync.get({
-        highlightNodes,
-        hideNodes
+        highlightNodes: '(prd|Prod)',
+        hideNodes: "(dev|Dev|e2e|E2E)"
     }, function (items) {
         document.getElementById('highlightNodes').value = items.highlightNodes;
         document.getElementById('hideNodes').value = items.hideNodes;
