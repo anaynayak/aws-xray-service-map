@@ -1,24 +1,34 @@
-function colorize(highlightNodes, hideNodes) {
-    var nodes = $("g.node title").toArray();
-    var highlight = new RegExp(highlightNodes);
-    var hide = new RegExp(hideNodes);
+function read() {
+    return $("g.node.clickable").map(function() {
+        var self = $(this);
+        return {
+            title: self.children("title").text(),
+            rpm: sanitizeRpm(self.children(".req-per-min").text().replace(/t\/min/g, '')),           
+            type: self.children("text.legend-type").text(),
+            ref: self
+        };
+    }).toArray();
+}
 
-    nodes.forEach(function (n) {
-        var node = $(n);
-        if (highlight.test(node.text())) {
-            node.parent().children('circle').css('fill', 'lightskyblue');
-        }
-        if (hide.test(node.text())) {
-            node.parent().css('opacity', 0.5);
-        }
-    });
-
+function sanitizeRpm(reqs) {
+    if (parseFloat(reqs)) {
+        return parseFloat(reqs) * (reqs.includes('k') ? 1000 : 1);
+    }
+}
+function colorize(nodes, config) {
+    var highlight = new RegExp(config.highlightNodes);
+    var hide = new RegExp(config.hideNodes);
     var map = new Map();
-    $(".req-per-min").each(function () {
-        var reqs = $(this).text().replace(/t\/min/g, '');
-        if (parseFloat(reqs)) {
-            var requests = parseFloat(reqs) * (reqs.includes('k') ? 1000 : 1);
-            map.set($(this), Math.log(requests));
+
+    nodes.forEach(function (node) {
+        if (highlight.test(node.title)) {
+            node.ref.children('circle').css('fill', 'lightskyblue');
+        }
+        if (hide.test(node.title)) {
+            node.ref.css('opacity', 0.5);
+        }
+        if (node.rpm) {
+            map.set(node.ref, Math.log(node.rpm));
         }
     });
 
@@ -29,7 +39,7 @@ function colorize(highlightNodes, hideNodes) {
 
     map.forEach(function (reqs, elem) {
         var color = perc2color(reqs).hex();
-        elem.parent().children('circle').css('fill', color);
+        elem.children('circle').css('fill', color);
     });
 }
 chrome.runtime.onMessage.addListener(function callback(message, sender) {
@@ -37,6 +47,7 @@ chrome.runtime.onMessage.addListener(function callback(message, sender) {
         highlightNodes: '(prd|Prod)',
         hideNodes: "(dev|Dev|e2e|E2E)"
     }, function (data) {
-        colorize(data.highlightNodes, data.hideNodes);
+        var nodes = read()
+        colorize(nodes, data);
     });
 });
