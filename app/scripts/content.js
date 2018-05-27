@@ -1,13 +1,34 @@
 function read() {
+    return {
+        nodes: getNodes(),
+        edges: getEdges()
+    };
+}
+
+function getNodes() {
     return $("g.node.clickable").map(function () {
         var self = $(this);
         return {
             title: self.children("title").text(),
             rpm: sanitizeRpm(self.children(".req-per-min").text().replace(/t\/min/g, '')),
             type: self.children("text.legend-type").text(),
+            id: self.attr('class').match(/\d+/g)[0],
             ref: self
         };
-    }).toArray();
+    }).toArray()
+}
+
+function getEdges() {
+    var linked = /\d+/g;
+    var numLinks = $("path.link").length
+    var edges = new Map();
+    $("path.link").each(function () {
+        var [from, to] = $(this).attr('class').match(linked);
+        var mapping = (edges.get(from) || [])
+        mapping.push(to);
+        edges.set(from, mapping);
+    });
+    return edges;
 }
 
 function sanitizeRpm(reqs) {
@@ -15,7 +36,7 @@ function sanitizeRpm(reqs) {
         return parseFloat(reqs) * (reqs.includes('k') ? 1000 : 1);
     }
 }
-function colorize(nodes, config, scale) {
+function colorize(nodes, edges, config, scale) {
     var highlight = new RegExp(config.highlightNodes);
     var hide = new RegExp(config.hideNodes);
     var map = new Map();
@@ -30,6 +51,11 @@ function colorize(nodes, config, scale) {
         if (node.rpm) {
             map.set(node.ref, Math.log(node.rpm));
         }
+        if (config.highlightSelectedNodeEdges) {
+            node.ref.click(function () {
+                processClick(node, edges);
+            });
+        }
     });
 
     var perc2color = scale
@@ -43,8 +69,20 @@ function colorize(nodes, config, scale) {
     });
 }
 
-function groupColor(nodes, data) {
-    var nodesPerType = nodes.reduce(function (acc, n) {
+function processClick(node, edges) {
+    var links = edges.get(node.id);
+    $('path.link').removeClass('link-selected');
+    if (!links || !node.ref.hasClass('node-selected')) {
+        return
+    }
+
+    links.forEach(function (l) {
+        $(`path.link.n${node.id}-n${l}`).addClass('link-selected');
+    });
+}
+
+function groupColor(graph, config) {
+    var nodesPerType = graph.nodes.reduce(function (acc, n) {
         (acc[n.type] = acc[n.type] || []).push(n)
         return acc;
     }, {});
@@ -57,16 +95,17 @@ function groupColor(nodes, data) {
         'AWS::DynamoDB::Table': chroma.scale(['lightgreen', 'yellow', 'red']),
     };
     Object.keys(nodesPerType).forEach(function (type, i) {
-        colorize(nodesPerType[type], data, scales[type] || scales[type.split(":")[0]] || defaultScale);
+        colorize(nodesPerType[type], graph.edges, config, scales[type] || scales[type.split(":")[0]] || defaultScale);
     })
 }
 
 chrome.runtime.onMessage.addListener(function callback(message, sender) {
     chrome.storage.sync.get({
         highlightNodes: '(prd|Prod)',
-        hideNodes: "(dev|Dev|e2e|E2E)"
-    }, function (data) {
-        var nodes = read()
-        groupColor(nodes, data);
+        hideNodes: "(dev|Dev|e2e|E2E)",
+        highlightSelectedNodeEdges: true
+    }, function (config) {
+        var graph = read()
+        groupColor(graph, config);
     });
 });
