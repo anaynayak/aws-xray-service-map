@@ -1,5 +1,20 @@
+function executeAll(id, scripts, cb) {
+    if (!scripts.length) {
+        cb.apply();
+        return;
+    }
+    chrome.tabs.executeScript(id, {
+        file: scripts[0]
+    }, function (resp) {
+        executeAll(id, scripts.slice(1), cb)
+    });
+}
+
 chrome.pageAction.onClicked.addListener(function (activeTab) {
-    chrome.tabs.sendMessage(activeTab.id, { colorize: true });
+    var scripts = ['scripts/jquery-3.3.1.min.js', 'scripts/chroma.min.js', 'scripts/content.js']
+    executeAll(activeTab.id, scripts, function () {
+        chrome.tabs.sendMessage(activeTab.id, { colorize: true })
+    });
 });
 
 chrome.commands.onCommand.addListener(function (command) {

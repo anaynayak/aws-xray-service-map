@@ -99,7 +99,7 @@ function groupColor(graph, config) {
     })
 }
 
-chrome.runtime.onMessage.addListener(function callback(message, sender) {
+function init() {
     chrome.storage.sync.get({
         highlightNodes: '(prd|Prod)',
         hideNodes: "(dev|Dev|e2e|E2E)",
@@ -108,4 +108,6 @@ chrome.runtime.onMessage.addListener(function callback(message, sender) {
         var graph = read()
         groupColor(graph, config);
     });
-});
+}
+
+init();

@@ -24,7 +24,7 @@
         "persistent": false
     },
     "commands": {
-        "colorize-aws-xray": {
+        "_execute_page_action": {
             "suggested_key": {
               "default": "Ctrl+Shift+X",
               "mac": "Command+Shift+X"
@@ -35,19 +35,5 @@
     "options_ui": {
         "page": "options.html",
         "open_in_tab": false
-    },
-    "content_scripts": [
-        {
-            "matches": [
-                "*://*/*"
-            ],
-            "js": [
-                "scripts/jquery-3.3.1.min.js",
-                "scripts/chroma.min.js",
-                "scripts/content.js"
-            ],
-            "run_at": "document_end",
-            "all_frames": false
-        }
-    ]
+    }
 }
